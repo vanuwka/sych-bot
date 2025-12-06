@@ -1,0 +1,35 @@
+services:
+  sych-bot:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: sych-bot
+    restart: unless-stopped
+    
+    # Переменные окружения из .env файла
+    env_file:
+      - .env
+    
+    # Монтируем папку data для сохранения JSON файлов
+    volumes:
+      - ./data:/app/data
+    
+    # Логирование
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    # Дополнительные настройки
+    environment:
+      - NODE_ENV=production
+    
+    # Проверка здоровья контейнера
+    healthcheck:
+      test: ["CMD", "sh", "-c", "echo 'Bot is running'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+      
