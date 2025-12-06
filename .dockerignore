@@ -1,0 +1,55 @@
+# Node.js
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Локальные данные (будут монтироваться как volume)
+data/
+db.json
+profiles.json
+
+# Окружение
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Git
+.git
+.gitignore
+README.md
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Логи
+logs
+*.log
+
+# Кэш
+.cache
+.npm
+.eslintcache
+
+# Тесты
+coverage
+.nyc_output
+
+# Временные файлы
+tmp/
+temp/
+  
