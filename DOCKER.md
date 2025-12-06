@@ -4,8 +4,8 @@
 
 ## Предварительные требования
 
-- Docker Engine 20.10+
-- Docker Compose 2.0+
+- Docker Engine 20.10+  [sudo curl -fsSL https://get.docker.com | sh]
+- Docker Compose 2.0+   [sudo apt-get install docker-compose-plugin]
 - Telegram Bot Token от [@BotFather](https://t.me/BotFather)
 - Google Gemini API ключ(и) от [Google AI Studio](https://aistudio.google.com)
 
