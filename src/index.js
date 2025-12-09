@@ -3,6 +3,23 @@ const config = require('./config');
 const logic = require('./core/logic');
 const storage = require('./services/storage');
 
+
+const originalLog = console.log;
+const originalError = console.error;
+
+function getTimestamp() {
+  const now = new Date();
+  const d = String(now.getDate()).padStart(2, '0');
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const y = String(now.getFullYear()).slice(-2);
+  const t = now.toLocaleTimeString('ru-RU', { hour12: false });
+  return `${d}.${m}.${y}-${t}`;
+}
+
+console.log = (...args) => originalLog(getTimestamp(), ...args);
+console.error = (...args) => originalError(getTimestamp(), ...args);
+
+
 // Создаем бота
 const bot = new TelegramBot(config.telegramToken, { polling: true });
 
