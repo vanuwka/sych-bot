@@ -3,8 +3,29 @@ const config = require('./config');
 const logic = require('./core/logic');
 const storage = require('./services/storage');
 
+
+const originalLog = console.log;
+const originalError = console.error;
+
+function getTimestamp() {
+  const now = new Date();
+  const d = String(now.getDate()).padStart(2, '0');
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const y = String(now.getFullYear()).slice(-2);
+  const t = now.toLocaleTimeString('ru-RU', { hour12: false });
+  return `${d}.${m}.${y}-${t}`;
+}
+
+console.log = (...args) => originalLog(getTimestamp(), ...args);
+console.error = (...args) => originalError(getTimestamp(), ...args);
+
+
 // Создаем бота
 const bot = new TelegramBot(config.telegramToken, { polling: true });
+
+// Передаем бота в AI-сервис для уведомлений
+const ai = require('./services/ai');
+ai.setBot(bot);
 
 console.log("Сыч запущен и готов пояснять за жизнь.");
 console.log(`Admin ID: ${config.adminId}`);
@@ -63,25 +84,33 @@ bot.on('message', async (msg) => {
 
           // 2. Если Админа нет (left, kicked) или он не участник
           if (!allowedStatuses.includes(adminMember.status)) {
-            console.log(`[SECURITY] ⛔ Обнаружен чат без Админа: "${chatTitle}" (ID: ${chatId}).`);
-            console.log(`[SECURITY] Статус админа: ${adminMember.status}. Покидаю чат...`);
-            // Пытаемся попрощаться. Если не вышло (уже кикнули) — пофиг, глушим ошибку.
-            await bot.sendMessage(chatId, "⛔ Хозяина (Admin ID) нет в этом чате. ББ.").catch(() => {});
-            // Пытаемся выйти. Если уже вышли — тоже пофиг.
+            console.log(`[SECURITY] ⛔ Обнаружен чат без Админа...`);
+            
+            // ВОТ ТУТ МЕНЯЕМ СООБЩЕНИЕ
+            const phrases = [
+                "Так, стопэ. Админа не вижу. Благотворительности не будет, я уёбываю!",
+                "Опа, куда это меня занесло? Бати рядом нет, так что я уёбываю!",
+                "Вы че думали, украли бота? Я не работаю в беспризорных приютах. Я уёбываю!",
+                "⚠️ ERROR: ADMIN NOT FOUND. Включаю протокол самоуважения. Я уёбываю!",
+                "Не, ну вы видели? Затащили без спроса. Ну вас нахер, я уёбываю!"
+            ];
+            const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
+
+            await bot.sendMessage(chatId, randomPhrase).catch(() => {});
             await bot.leaveChat(chatId).catch(() => {});
-            return; // Прерываем обработку
+            return; 
         }
       } catch (e) {
-          // Если мы даже не можем проверить админа (например, бот забанен или нет прав), лучше уйти
-          console.error(`[SECURITY ERROR] Ошибка проверки прав в "${chatTitle}": ${e.message}`);
-          // На всякий случай пытаемся выйти, если ошибка критичная
-          if (e.message.includes('chat not found') || e.message.includes('kicked')) {
-             // Игнорим, мы и так не там
-          } else {
-             // Пытаемся выйти
-             bot.leaveChat(chatId).catch(() => {});
-          }
-      }
+        // Если ошибка проверки прав
+        console.error(`[SECURITY ERROR] Ошибка проверки прав в "${chatTitle}": ${e.message}`);
+        
+        // ВЫХОДИМ ТОЛЬКО ЕСЛИ ЧАТА БОЛЬШЕ НЕТ ИЛИ БОТА КИКНУЛИ
+        // При обычных сетевых ошибках (ETIMEDOUT, 502 и т.д.) - ОСТАЕМСЯ
+        if (e.message.includes('chat not found') || e.message.includes('kicked') || e.message.includes('Forbidden')) {
+           bot.leaveChat(chatId).catch(() => {});
+        } 
+        // Во всех остальных случаях (лаг API) — просто игнорируем и работаем дальше
+    }
   }
 
   // === ЛОГИКА ВЫХОДА ВСЛЕД ЗА АДМИНОМ (ХАТИКО) ===

@@ -1,3 +1,4 @@
+const packageInfo = require('../package.json');
 require('dotenv').config();
 
 // Собираем все ключи Gemini в массив
@@ -15,12 +16,16 @@ console.log(`[CONFIG] Загружено ключей Gemini: ${geminiKeys.lengt
 
 module.exports = {
   telegramToken: process.env.TELEGRAM_BOT_TOKEN,
+  version: packageInfo.version,
   botId: parseInt(process.env.TELEGRAM_BOT_TOKEN.split(':')[0], 10),
   adminId: parseInt(process.env.ADMIN_USER_ID, 10),
   
   geminiKeys: geminiKeys,
   
-  modelName: 'gemini-2.5-flash',
+  modelName: 'gemini-2.5-flash', 
+  fallbackModelName: 'gemini-2.5-flash-lite', // Запасной вариант
+  logicModelName: 'gemma-3-27b-it', // Рабочая лошадка для логики
+  contextSize: 30,
   contextSize: 30,
   triggerRegex: /(?<![а-яёa-z])(сыч|sych)(?![а-яёa-z])/i,
 
